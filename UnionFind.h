@@ -15,12 +15,12 @@ class UF_Node;
 template<class E>
 class UF_Node
 {
-    friend class UnionFind;
+    friend class UnionFind<E>;
 public:
     int count;
-    std::shared_ptr<UF_Node<E>> next;
-    std::shared_ptr<UF_Node<E>> head;
-    E data;
+    UF_Node<E>* next;
+    UF_Node<E>* head;
+    E data; //will hold the group data.
 
     UF_Node(E& data) : count(0), data(data)
     {
@@ -32,7 +32,7 @@ public:
     {
         next = nullptr;
     }
-    
+
 };
 
 /* ********************************** Union Find Class ********************************** */
@@ -40,75 +40,81 @@ public:
 template<class E>
 class UnionFind
 {
-    friend class UF_Node;
+    friend class UF_Node<E>;
 public:
     UnionFind(int k) : size(k)
     {
-        arr = new UF_Node<E>*[size];
+        if (k >= 0)
+        {
+            arr = new UF_Node<E>*[k];
+        }
     }
     ~UnionFind()
     {
         for (int i = 0; i < size; i++)
         {
-            arr[i] = nullptr;
+            delete arr[i];
         }
         delete arr;
     }
 
     StatusType MakeSet(E& element, int id);
-    E& Find(int id);
-    E& Union(int g1, int g2);
+    E Find(int id);
+    E Union(int g1, int g2);
 
 private:
     int size;
-    UF_Node<E>* arr[]; //Array of pointer to elemnts
+    UF_Node<E>** arr; //Array of pointer to elements
 
 };
 
 template<class E>
 StatusType UnionFind<E>::MakeSet(E& element, int id)
 {
-    if(id < 0 || id >= size)
+    if (id < 0 || id >= size)
         return INVALID_INPUT;
 
     arr[id] = new UF_Node<E>(element);
-    if(arr[id] == nullptr)
+    if (arr[id] == nullptr)
         return ALLOCATION_ERROR;
-    
+
     arr[id]->head = arr[id];
     arr[id]->count = 1;
     return SUCCESS;
 }
 
 template<class E>
-E& UnionFind<E>::Find(int id)
+E UnionFind<E>::Find(int id)
 {
-    if(id < 0 || id >= size)
-        return nullptr;
-    return arr[id]->data;
+    if (id < 0 || id >= size)
+        return E();
+    return arr[id]->head->data;
 }
 
 template<class E>
-E& UnionFind<E>::Union(int g1, int g2)
+E UnionFind<E>::Union(int g1, int g2)
 {
-    if(g1 < 0 || g2 < 0 || g1 >= size || g2 >= size)
-        return nullptr;
+    if (g1 < 0 || g2 < 0 || g1 >= size || g2 >= size)
+        return E();
 
-    UF_Node* a_head = arr[g1]->head;
-    UF_Node* b_head = arr[g2]->head;
-    if(a_head == b_head) //Can't union 2 elements from same group.
-        return nullptr;
-    
+    UF_Node<E>* a_head = arr[g1]->head;
+    UF_Node<E>* b_head = arr[g2]->head;
+    if (a_head == b_head) //Can't union 2 elements from same group.
+        return E();
 
-    UF_Node* temp, temp_next, head_new;
+
+    UF_Node<E>* temp;
+    UF_Node<E>* temp_next;
+    UF_Node<E>* head_new;
     int count1 = a_head->count;
     int count2 = b_head->count;
-    if(count1 < count2)
+    if (count1 < count2)
     {
         head_new = b_head;
         a_head->next = head_new;
         head_new->count += count1;
         temp = arr[g1];
+        /*  When Group class is finished, dont forget to move Data from 'OLD_HEAD' to head_new !!! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  */
     }
     else
     {
@@ -116,10 +122,11 @@ E& UnionFind<E>::Union(int g1, int g2)
         b_head->next = head_new;
         head_new->count += count2;
         temp = arr[g2];
+        /*  When Group class is finished, dont forget to move Data from 'OLD_HEAD' to head_new !!! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  */
     }
-
+    
     temp_next = temp->next;
-    while(temp != head_new)
+    while (temp != head_new)
     {
         temp->next = head_new;
         temp->head = head_new;
