@@ -17,6 +17,7 @@ private:
     std::shared_ptr < Avl<std::shared_ptr<Level>, int> > levels;
     int count;
     std::shared_ptr<Level> level0;
+    std::shared_ptr<Level> max_level;
 
 public:
     Group(int id); //C'tor, need to add initializing of levels tree with level0
@@ -25,6 +26,7 @@ public:
         levels->deleteAllTree();
         levels = nullptr;
         level0 = nullptr;
+        max_level = nullptr;
     }
     StatusType AddPlayer(std::shared_ptr<Player> p, Pair key); //change to AddLevel
     StatusType RemovePlayer(Pair p); //change to RemoveLevel
