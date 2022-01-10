@@ -2,10 +2,6 @@
 #define PLAYER_H
 
 #include "avl.h"
-#include "pair.h"
-#include "group.h"
-
-class Group;
 
 class Player
 {

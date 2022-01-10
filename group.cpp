@@ -1,12 +1,18 @@
 #include "group.h"
-#include "avl.h"
 
-Group::Group(int id) : id(id), max_level(-1), id_max_level(-1), count(0)
+Group::Group(int id) : id(id), count(0)
 {
-    std::shared_ptr < Avl<std::shared_ptr<Player>, Pair> > p( new Avl<std::shared_ptr<Player>, Pair>());
-    this->players = p;
+    //std::shared_ptr < Avl<std::shared_ptr<Player>, Pair> > p( new Avl<std::shared_ptr<Player>, Pair>());
+    //this->players = p;
 }
 
+StatusType Group::AddLevel(int level); 
+StatusType Group::RemoveLevel(int level);
+StatusType Group::UpdateRanks(std::shared_ptr<Level> level);
+StatusType Group::AddPlayer(std::shared_ptr<Player> player); 
+StatusType Group::RemovePlayer(int id, int level);
+
+/*
 StatusType Group::AddPlayer(std::shared_ptr<Player> p, Pair key)
 {
     StatusType st = players->insert(p, key);
@@ -43,3 +49,4 @@ StatusType Group::RemovePlayer(Pair p)
     }
     return st;
 }
+*/
