@@ -8,8 +8,15 @@ class Avl;
 
 /* *************************** Node Implementation Below *****************************/
 /* Node Constructor */
-Node::Node(std::shared_ptr<Level> data, int key) : data(data), key(key), left(nullptr), right(nullptr), father(nullptr), balance_factor(0), height(0)
+Node::Node(std::shared_ptr<Level> data, int key) : data(data), key(key), left(nullptr), right(nullptr), father(nullptr),
+                                                    balance_factor(0), height(0), min_left(key), max_right(key), 
+                                                    num_players_left(0), num_players_right(0), sum_left(0), sum_right(0)
 {
+    for (int i = 0; i < MAXSCALE; i++)
+    {
+        left_hist[i] = 0;
+        right_hist[i] = 0;
+    }
 }
 
 /* Node Copy constructor */
@@ -25,7 +32,6 @@ Node::~Node()
 void Node::UpdateBF()
 {
     int hL, hR;
-
     if (this->left == nullptr)
         hL = -1;
     else
@@ -355,7 +361,10 @@ void Avl::AfterInsertCheckTree(std::shared_ptr<Node> v)
             return;
 
         default: //BF is ok
+            UpdateRankedData_Left(p);
+            UpdateRankedData_Right(p);
             v = p;
+            
             break;
         }
     }
@@ -394,6 +403,8 @@ void Avl::Gilgol(std::shared_ptr<Node> r, GILGOL_TYPE type)
 
         if (this->root == r)
             this->root = tempA;
+        
+        UpdateRankedData_ByNode(r);
     }
     break;
 
@@ -425,6 +436,8 @@ void Avl::Gilgol(std::shared_ptr<Node> r, GILGOL_TYPE type)
 
         if (this->root == r)
             this->root = tempA;
+
+        UpdateRankedData_ByNode(r);
     }
     break;
 
@@ -465,6 +478,8 @@ void Avl::Gilgol(std::shared_ptr<Node> r, GILGOL_TYPE type)
 
         if (r == this->root)
             this->root = tempB;
+        UpdateRankedData_ByNode(tempA);
+        UpdateRankedData_ByNode(r);
     }
     break;
 
@@ -505,6 +520,9 @@ void Avl::Gilgol(std::shared_ptr<Node> r, GILGOL_TYPE type)
 
         if (r == this->root)
             this->root = tempB;
+
+        UpdateRankedData_ByNode(tempA);
+        UpdateRankedData_ByNode(r);
     }
     break;
     }
@@ -694,4 +712,66 @@ void Avl::reverseInOrderRemoveNodes_rec(std::shared_ptr<Node> n, int* i, int cou
     }
 
     reverseInOrderRemoveNodes_rec(n->left, i, count);
+}
+
+/* This function called ONLY when player is added\removed BUT the tree didnt changed (no new node added or removed) */
+void Avl::UpdateRankedData(int startingPoint_Key)
+{
+    std::shared_ptr<Node> startNode = findNode(root, startingPoint_Key)->father;
+
+    while(startNode != nullptr)
+    {
+        UpdateRankedData_Left (startNode);
+        UpdateRankedData_Right(startNode);
+
+        startNode = startNode->father;
+    }
+}
+
+void Avl::UpdateRankedData_ByNode(std::shared_ptr<Node> startNode)
+{
+    while(startNode != nullptr)
+    {
+        UpdateRankedData_Left (startNode);
+        UpdateRankedData_Right(startNode);
+
+        startNode = startNode->father;
+    }
+}
+
+void Avl::UpdateRankedData_Left(std::shared_ptr<Node> startNode)
+{
+    if (startNode->left != nullptr)
+    {   
+        startNode->min_left = startNode->left->min_left;
+        startNode->num_players_left  = startNode->left->num_players_left + startNode->left->num_players_right +
+                                        startNode->left->data->num_players;
+        startNode->sum_left = startNode->left->sum_left + startNode->left->sum_right +
+                                startNode->left->data->num_players * startNode->left->data->level;
+        for(int i = 1; i < MAXSCALE ; i++)
+        {
+            startNode->left_hist[i] = startNode->left->left_hist[i] + startNode->left->right_hist[i] +
+                                        startNode->left->data->hist[i];
+        }
+    }
+}
+
+void Avl::UpdateRankedData_Right(std::shared_ptr<Node> startNode)
+{
+    if(startNode->right != nullptr)
+    { 
+        startNode->max_right = startNode->right->max_right;
+
+        startNode->num_players_right = startNode->right->num_players_left + startNode->right->num_players_right +
+                                       startNode->right->data->num_players;
+        
+        startNode->sum_right = startNode->right->sum_left + startNode->right->sum_right +
+                               startNode->right->data->num_players * startNode->right->data->level;
+
+        for (int i = 1; i < MAXSCALE; i++)
+        {
+            startNode->right_hist[i] = startNode->right->left_hist[i] + startNode->right->right_hist[i] + 
+                                       startNode->right->data->hist[i];
+        }
+    }
 }

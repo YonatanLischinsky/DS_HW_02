@@ -10,14 +10,17 @@
 class PlayersManager
 {
     private:
-        UnionFind<Group> groups;
-        Group group0;
-        HashTable<Player> all_players;
+        std::shared_ptr<UnionFind<std::shared_ptr<Group>>> groups;
+        std::shared_ptr<HashTable<std::shared_ptr<Player>>> all_players;
         int k;
         int scale;
 
+        /* Helper Functions: */
+        StatusType MoveDataFromSourceToDest(std::shared_ptr<Group> sourceGroup,
+                                            std::shared_ptr<Group> destinationGroup); //O(N) -> N = the amount of player in both groups.
+
     public:
-        PlayersManager(int k, int scale); //C'tor
+        PlayersManager(int k_groups, int scale_input); //C'tor
         ~PlayersManager() = default; //D'tor
         StatusType MergeGroups(int GroupID1, int GroupID2);
         StatusType AddPlayer(int PlayerID, int GroupID, int score);

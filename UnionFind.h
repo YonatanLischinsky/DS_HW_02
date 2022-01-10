@@ -96,13 +96,14 @@ E UnionFind<E>::Find(int id, StatusType* st)
         *st = INVALID_INPUT;
         return E();
     }
+    *st = SUCCESS;
     return arr[id]->head->data;
 }
 
 template<class E>
 E UnionFind<E>::Union(int g1, int g2, StatusType* st)
 {
-    if (g1 < 0 || g2 < 0 || g1 >= size || g2 >= size)
+    if (g1 <= 0 || g2 <= 0 || g1 >= size || g2 >= size)
     {
         *st = INVALID_INPUT;
         return E();
@@ -126,7 +127,6 @@ E UnionFind<E>::Union(int g1, int g2, StatusType* st)
         a_head->next = head_new;
         head_new->count += count1;
         temp = arr[g1];
-        /*  When Group class is finished, dont forget to move Data from 'OLD_HEAD' to head_new !!! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  */
     }
     else
     {
@@ -134,7 +134,6 @@ E UnionFind<E>::Union(int g1, int g2, StatusType* st)
         b_head->next = head_new;
         head_new->count += count2;
         temp = arr[g2];
-        /*  When Group class is finished, dont forget to move Data from 'OLD_HEAD' to head_new !!! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  */
     }
 
     temp_next = temp->next;
@@ -145,6 +144,7 @@ E UnionFind<E>::Union(int g1, int g2, StatusType* st)
         temp = temp_next;
         temp_next = temp_next->next;
     }
+    *st = SUCCESS;
     return head_new->data;
 }
 

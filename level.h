@@ -5,7 +5,7 @@
 #include "group.h" //?
 #include "HashTable.h"
 
-#define MAXSCALE 200
+#define MAXSCALE 201
 
 class Group; //?
 
@@ -14,7 +14,7 @@ class Level
 private:
     int level;
     int num_players;
-    HashTable<Player> players;
+    HashTable<std::shared_ptr<Player>> players;
     int hist[MAXSCALE];
 
 public:
@@ -25,11 +25,12 @@ public:
         {
             hist[i] = 0;
         }
-        
      } //C'tor
 
     Level(Level& p) = default; //Copy c'tor ??
-    ~Level() = default; 
+    ~Level() = default;
+    StatusType AddPlayer(std::shared_ptr<Player> player);
+    StatusType RemovePlayer(int id);
 
     friend class Group; //?
     friend class Avl;

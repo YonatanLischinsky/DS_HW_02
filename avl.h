@@ -4,7 +4,7 @@
 #include "library2.h"
 #include "level.h"
 
-#define MAXSCALE 200
+#define MAXSCALE 201
 
 class Avl;
 
@@ -45,7 +45,7 @@ public:
 
     //need to add functions that update the ranks below with every insert/remove
     int min_left;
-    int min_right;
+    int max_right;
     int left_hist[MAXSCALE];
     int right_hist[MAXSCALE];
     int num_players_left;
@@ -78,6 +78,7 @@ public:
     void reverseInOrderRemoveNodes(int count);
     void deleteAllTree();
     bool search(int key);
+    void UpdateRankedData(int startingPoint_Key);
 
 private:
     std::shared_ptr<Node> root;
@@ -98,6 +99,10 @@ private:
     void InOrderFillArrKey_rec(int arr[], std::shared_ptr<Node> n, int* i, int count, bool fillArray);
     void CreateEmptyFullTree_rec(int height, std::shared_ptr<Node> n);
     void reverseInOrderRemoveNodes_rec(std::shared_ptr<Node> n, int* i, int count);
+    void UpdateRankedData_Right (std::shared_ptr<Node> startNode);
+    void UpdateRankedData_Left  (std::shared_ptr<Node> startNode);
+    void UpdateRankedData_ByNode(std::shared_ptr<Node> startNode);
+
 };
 
 #endif
