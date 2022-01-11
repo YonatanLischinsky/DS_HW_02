@@ -32,7 +32,13 @@ StatusType Group::RemoveLevel(int level)
     return res;
 }
 
-// StatusType Group::UpdateRanks(std::shared_ptr<Level> level);
+StatusType Group::UpdateRanks(std::shared_ptr<Level> level)
+{
+    if(level == nullptr)
+        return FAILURE;
+    levels->UpdateRankedData(level->level);
+    return SUCCESS;
+}
 
 StatusType Group::AddPlayer(std::shared_ptr<Player> player)
 {
@@ -87,7 +93,14 @@ StatusType Group::RemovePlayer(int id, int level)
     count--;
     return SUCCESS;
 }
-//StatusType Group::UpdateLevelHist(int level, int old_score, int new_score);
+
+StatusType Group::UpdateLevelHist(int level, int old_score, int new_score)
+{
+    std::shared_ptr<Level> lvl = levels->getData(level);
+    lvl->hist[old_score]--;
+    lvl->hist[new_score]++;
+    return UpdateRanks(lvl);
+}
 
 /*
 StatusType Group::AddPlayer(std::shared_ptr<Player> p, Pair key)

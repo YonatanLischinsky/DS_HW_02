@@ -122,8 +122,8 @@ StatusType PlayersManager::ChangePlayerIDScore(int PlayerID, int NewScore)
     to_edit->score = NewScore;
     StatusType st;
 
-    //need to complete group.UpdateLevelHist
     groups->Find(0, &st)->UpdateLevelHist(to_edit->level, old_score, NewScore);
+    groups->Find(to_edit->group, &st)->UpdateLevelHist(to_edit->level, old_score, NewScore);
 
     return SUCCESS;
 }
