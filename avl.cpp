@@ -195,6 +195,8 @@ StatusType Avl::remove(int key)
     if (father == nullptr)
         return SUCCESS;
 
+    UpdateRankedData_ByNode(father);
+    
     int initHeight = father->height;
     while (father != nullptr)
     {

@@ -17,6 +17,7 @@ public:
     ~Player() = default;
 
     friend class Group;
+    friend class Level;
     friend class PlayersManager;
 };
 

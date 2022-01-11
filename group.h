@@ -11,7 +11,8 @@ class Group
 {
 private:
     int id;
-    int count;
+    int count; //players in group
+    int count_levels; //at least 1 - level0
     bool level0_changed;
     std::shared_ptr<Avl> levels;
     std::shared_ptr<Level> level0;

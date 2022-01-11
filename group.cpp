@@ -1,6 +1,6 @@
 #include "group.h"
 
-Group::Group(int id) : id(id), count(0), level0_changed(false)
+Group::Group(int id) : id(id), count(0), count_levels(1), level0_changed(false)
 {
     levels = std::shared_ptr<Avl> (new Avl());
     level0 = std::shared_ptr<Level> (new Level(0, 0));
@@ -18,17 +18,31 @@ StatusType Group::AddLevel(int level)
     if(lvl_to_insert == nullptr)
         return ALLOCATION_ERROR;
 
-    return (levels->insert(lvl_to_insert, level));
+    if(level > max_level->level)
+        max_level = lvl_to_insert;
+    res = levels->insert(lvl_to_insert, level);
+    if (res != SUCCESS)
+        return res;
+    count_levels++;
+    return res;
 }
 
 StatusType Group::RemoveLevel(int level)
 {
     if(level <= 0)
         return INVALID_INPUT;
+    
     StatusType res;
     res = levels->remove(level);
+    if(res != SUCCESS)
+        return res;
     
-    //Todo: handle the ranking data.
+    count_levels--;
+    if(level == max_level->level)
+    {
+        max_level = levels->getData(levels->GetMaxKey());
+    }
+    
     return res;
 }
 
@@ -101,42 +115,3 @@ StatusType Group::UpdateLevelHist(int level, int old_score, int new_score)
     lvl->hist[new_score]++;
     return UpdateRanks(lvl);
 }
-
-/*
-StatusType Group::AddPlayer(std::shared_ptr<Player> p, Pair key)
-{
-    StatusType st = players->insert(p, key);
-    if (st == SUCCESS)
-    {
-        count++;
-        if ((key.levels > max_level) || (key.levels == max_level && key.id < id_max_level))
-        {
-            max_level = key.levels;
-            id_max_level = key.id;
-        }
-    }
-
-    return st;
-}
-
-StatusType Group::RemovePlayer(Pair p)
-{
-    StatusType st = players->remove(p);
-    if (st == SUCCESS)
-    {
-        count--;
-        if (count == 0)
-        {
-            max_level = -1;
-            id_max_level = -1;
-        }
-        else if (p.id == id_max_level)
-        {
-            Pair max = players->GetMaxKey();
-            max_level = max.levels;
-            id_max_level = max.id;
-        }
-    }
-    return st;
-}
-*/

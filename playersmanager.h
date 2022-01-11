@@ -18,6 +18,9 @@ class PlayersManager
         /* Helper Functions: */
         StatusType MoveDataFromSourceToDest(std::shared_ptr<Group> sourceGroup,
                                             std::shared_ptr<Group> destinationGroup); //O(N) -> N = the amount of player in both groups.
+        void PlayersManager::MergeGroups_Helper(std::shared_ptr<Level> a[], int na, std::shared_ptr<Level> b[],
+                                                int nb, std::shared_ptr<Level> c[]);
+        std::shared_ptr<Level> PlayersManager::MergeLevels(std::shared_ptr<Level> a, std::shared_ptr<Level> b);
 
     public:
         PlayersManager(int k_groups, int scale_input); //C'tor

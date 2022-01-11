@@ -16,6 +16,7 @@ template<class E>
 class HT_Node
 {
     friend class HashTable<E>;
+    friend class PlayersManager;
 public:
     std::shared_ptr<HT_Node<E>> next;
     std::shared_ptr<HT_Node<E>> prev;
@@ -76,14 +77,18 @@ public:
 
     StatusType Insert(E data, int key);
     E Find(int key, StatusType* st);
+    E GetFirst();
     StatusType Remove(int key);
+    std::shared_ptr<HT_Node<E>>* GetArray() { return arr; }
 
-    int GetSize_DEBUG() {
+    int GetSize()
+    {
         return this->currentArrSize;
     }
 
-    int GetCount_DEBUG() {
-        return this->currentCount;
+    int GetCount()
+    {
+        return currentCount;
     }
 
 private:
@@ -262,4 +267,13 @@ E HashTable<E>::Find(int key, StatusType* st)
     return E();
 }
 
+template<class E>
+E HashTable<E>::GetFirst()
+{
+    for (int i = 0; i < current; i++)
+    {
+        /* code */
+    }
+    
+}
 #endif
