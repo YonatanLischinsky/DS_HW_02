@@ -1,10 +1,12 @@
 #ifndef HT_H_
 #define HT_H_
+
 #include <memory>
 #include <stdio.h>
 #include <iostream>
 #include <math.h>
 #include "library2.h"
+
 #define INITIAL_ARR_LEN 2
 
 template<typename E>
@@ -77,7 +79,7 @@ public:
 
     StatusType Insert(E data, int key);
     E Find(int key, StatusType* st);
-    E GetFirst();
+    //E GetFirst();
     StatusType Remove(int key);
     std::shared_ptr<HT_Node<E>>* GetArray() { return arr; }
 
@@ -94,7 +96,7 @@ public:
 private:
     int currentArrSize; //hold the current size of the array. Initial value is 2.
     int currentCount;   //holds the amount of elements in the array. when this gets to ArrSize/2  ---> need to multilply(2X) the arr size.
-    
+
     std::shared_ptr<HT_Node<E>>* arr; //Array of pointers to elements.
 
 
@@ -170,6 +172,8 @@ StatusType HashTable<E>::Insert_Helper(std::shared_ptr<HT_Node<E>> Element, int 
     if (array[HashFunc(key)] == nullptr)
     {
         array[HashFunc(key)] = Element;
+        Element->next = nullptr;
+        Element->prev = nullptr;
     }
     else //insert to the chain...
     {
@@ -186,6 +190,7 @@ StatusType HashTable<E>::Insert_Helper(std::shared_ptr<HT_Node<E>> Element, int 
         array[HashFunc(key)] = Element;
         Element->next = ptr;
         ptr->prev = Element;
+        ptr->next = nullptr;
     }
     return SUCCESS;
 }
@@ -211,7 +216,7 @@ StatusType HashTable<E>::MultiplyOrDivide_Arr()
     }
 
     int oldSize = currentArrSize;
-    currentArrSize *= multFactor;
+    currentArrSize = (int) (currentArrSize * multFactor);
 
     for (int i = 0; i < oldSize; i++)
     {
@@ -226,6 +231,7 @@ StatusType HashTable<E>::MultiplyOrDivide_Arr()
                 delete[] temp;
                 return res;
             }
+
             ptr = ptr_temp;
             if (ptr_temp != nullptr)
                 ptr_temp->prev = nullptr;
@@ -237,6 +243,8 @@ StatusType HashTable<E>::MultiplyOrDivide_Arr()
         arr[i] = nullptr;
     }
     delete[] arr;
+
+
     arr = temp;
 
     return SUCCESS;
@@ -267,13 +275,13 @@ E HashTable<E>::Find(int key, StatusType* st)
     return E();
 }
 
-template<class E>
-E HashTable<E>::GetFirst()
-{
-    for (int i = 0; i < current; i++)
-    {
-        /* code */
-    }
-    
-}
+//template<class E>
+//E HashTable<E>::GetFirst()
+//{
+//    for (int i = 0; i < current; i++)
+//    {
+//        /* code */
+//    }
+//
+//}
 #endif

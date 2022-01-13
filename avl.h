@@ -1,6 +1,8 @@
 #ifndef AVL_H
 #define AVL_H
 
+using namespace std;
+#include <memory>
 #include "library2.h"
 #include "level.h"
 
@@ -26,8 +28,24 @@ typedef enum
 class Node
 {
 public:
-    Node(int h) : balance_factor(0), height(h)
-    { }
+    Node(int h) : balance_factor(0), height(h), data(nullptr), left(nullptr), right(nullptr), father(nullptr)
+    {
+        key = 0;
+        balance_factor = 0;
+        height = 0;
+        min_left = 0;
+        max_right = 0;
+        num_players_left = 0;
+        num_players_right = 0;
+        sum_left = 0;
+        sum_right = 0;
+
+        for (int i = 0; i < MAXSCALE; i++)
+        {
+            left_hist[i] = 0;
+            right_hist[i] = 0;
+        }
+    }
     Node(std::shared_ptr<Level> data, int key); //Constructor
     Node(const Node& node); //copy constructor
     ~Node(); //destructor
@@ -79,6 +97,7 @@ public:
     void deleteAllTree();
     bool search(int key);
     void UpdateRankedData(int startingPoint_Key);
+    void PostOrderUpdateRanks();
 
 private:
     std::shared_ptr<Node> root;
@@ -99,9 +118,10 @@ private:
     void InOrderFillArrKey_rec(int arr[], std::shared_ptr<Node> n, int* i, int count, bool fillArray);
     void CreateEmptyFullTree_rec(int height, std::shared_ptr<Node> n);
     void reverseInOrderRemoveNodes_rec(std::shared_ptr<Node> n, int* i, int count);
-    void UpdateRankedData_Right (std::shared_ptr<Node> startNode);
-    void UpdateRankedData_Left  (std::shared_ptr<Node> startNode);
+    void UpdateRankedData_Right(std::shared_ptr<Node> startNode);
+    void UpdateRankedData_Left(std::shared_ptr<Node> startNode);
     void UpdateRankedData_ByNode(std::shared_ptr<Node> startNode);
+    void PostOrderUpdateRanks_rec(std::shared_ptr<Node> node);
 
 };
 

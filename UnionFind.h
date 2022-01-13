@@ -43,11 +43,12 @@ class UnionFind
 {
     friend class UF_Node<E>;
 public:
-    UnionFind(int k) : size(k)
+    UnionFind(int k) : size(k+1)
     {
+        arr = nullptr;
         if (k >= 0)
         {
-            arr = new std::shared_ptr<UF_Node<E>>[k];
+            arr = new std::shared_ptr<UF_Node<E>>[size];
         }
     }
     ~UnionFind()
@@ -79,7 +80,7 @@ StatusType UnionFind<E>::MakeSet(E element, int id)
     if (id < 0 || id >= size)
         return INVALID_INPUT;
 
-    arr[id] = std::shared_ptr<UF_Node<E>> (new UF_Node<E>(element));
+    arr[id] = std::shared_ptr<UF_Node<E>>(new UF_Node<E>(element));
     if (arr[id] == nullptr)
         return ALLOCATION_ERROR;
 

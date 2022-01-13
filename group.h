@@ -5,7 +5,6 @@
 #include "player.h"
 #include "level.h"
 
-class Player;
 
 class Group
 {
@@ -31,7 +30,7 @@ public:
         level0 = nullptr;
         max_level = nullptr;
     }
-    StatusType AddPlayer(std::shared_ptr<Player> player); 
+    StatusType AddPlayer(std::shared_ptr<Player> player);
     StatusType RemovePlayer(int id, int level);
     StatusType  UpdateLevelHist(int level, int old_score, int new_score);
     //updates the level - decrease from hist in old_score, increase hist in new_score

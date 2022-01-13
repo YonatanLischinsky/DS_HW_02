@@ -1,13 +1,10 @@
 #ifndef LEVEL_H
 #define LEVEL_H
 
-#include "avl.h"
-#include "group.h" //?
 #include "HashTable.h"
+#include "player.h"
 
 #define MAXSCALE 201
-
-class Group;
 
 class Level
 {

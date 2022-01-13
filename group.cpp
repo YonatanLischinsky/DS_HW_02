@@ -2,8 +2,8 @@
 
 Group::Group(int id) : id(id), count(0), count_levels(1), level0_changed(false)
 {
-    levels = std::shared_ptr<Avl> (new Avl());
-    level0 = std::shared_ptr<Level> (new Level(0, 0));
+    levels = std::shared_ptr<Avl>(new Avl());
+    level0 = std::shared_ptr<Level>(new Level(0, 0));
     max_level = level0;
     levels->insert(level0, 0);
 }
@@ -11,14 +11,14 @@ Group::Group(int id) : id(id), count(0), count_levels(1), level0_changed(false)
 StatusType Group::AddLevel(int level)
 {
     StatusType res;
-    if(level <= 0)
+    if (level <= 0)
         return INVALID_INPUT;
-    
+
     std::shared_ptr<Level> lvl_to_insert = std::shared_ptr<Level>(new Level(level, 0));
-    if(lvl_to_insert == nullptr)
+    if (lvl_to_insert == nullptr)
         return ALLOCATION_ERROR;
 
-    if(level > max_level->level)
+    if (level > max_level->level)
         max_level = lvl_to_insert;
     res = levels->insert(lvl_to_insert, level);
     if (res != SUCCESS)
@@ -29,26 +29,26 @@ StatusType Group::AddLevel(int level)
 
 StatusType Group::RemoveLevel(int level)
 {
-    if(level <= 0)
+    if (level <= 0)
         return INVALID_INPUT;
-    
+
     StatusType res;
     res = levels->remove(level);
-    if(res != SUCCESS)
+    if (res != SUCCESS)
         return res;
-    
+
     count_levels--;
-    if(level == max_level->level)
+    if (level == max_level->level)
     {
         max_level = levels->getData(levels->GetMaxKey());
     }
-    
+
     return res;
 }
 
 StatusType Group::UpdateRanks(std::shared_ptr<Level> level)
 {
-    if(level == nullptr)
+    if (level == nullptr)
         return FAILURE;
     levels->UpdateRankedData(level->level);
     return SUCCESS;
@@ -57,7 +57,7 @@ StatusType Group::UpdateRanks(std::shared_ptr<Level> level)
 StatusType Group::AddPlayer(std::shared_ptr<Player> player)
 {
     StatusType res;
-    if(player->level == 0)
+    if (player->level == 0)
     {
         res = level0->AddPlayer(player);
         if (res != SUCCESS)
@@ -67,7 +67,7 @@ StatusType Group::AddPlayer(std::shared_ptr<Player> player)
     else
     {
         std::shared_ptr<Level> lvl = levels->getData(player->level);
-        if(lvl != nullptr)
+        if (lvl != nullptr)
         {
             res = lvl->AddPlayer(player);
             if (res != SUCCESS)
@@ -92,7 +92,7 @@ StatusType Group::AddPlayer(std::shared_ptr<Player> player)
 StatusType Group::RemovePlayer(int id, int level)
 {
     StatusType res;
-    if(level == 0)
+    if (level == 0)
     {
         res = level0->RemovePlayer(id);
         level0_changed = true;
