@@ -66,18 +66,6 @@ StatusType PlayersManager::AddPlayer(int PlayerID, int GroupID, int score)
     std::shared_ptr<Group> g = groups->Find(GroupID, &st);
     std::shared_ptr<Group> g0 = groups->Find(0, &st);
 
-    //if (g0->level0_changed)
-    //{
-    //    g0->UpdateRanks(g0->level0);
-    //    g0->level0_changed = false;
-    //}
-    //if (g->level0_changed)
-    //{
-    //    g->UpdateRanks(g->level0);
-    //    g->level0_changed = false;
-    //}
-
-
     /* **************** Insert to all_player Hash Table:  **************** */
     st = all_players->Insert(to_insert, PlayerID);
     if (st != SUCCESS)
@@ -203,7 +191,9 @@ StatusType PlayersManager::ChangePlayerIDScore(int PlayerID, int NewScore)
 StatusType PlayersManager::GetPercentOfPlayersWithScoreInBounds(int GroupID, int score, int lowerLevel, int higherLevel,
     double* players)
 {
-    //check if valid
+    if (GroupID < 0 || GroupID > k || players == nullptr)
+        return INVALID_INPUT;
+
     StatusType st;
     std::shared_ptr<Group> g = groups->Find(GroupID, &st);
     std::shared_ptr<Group> g0 = groups->Find(0, &st);
@@ -218,13 +208,30 @@ StatusType PlayersManager::GetPercentOfPlayersWithScoreInBounds(int GroupID, int
         g->UpdateRanks(g->level0);
         g->level0_changed = false;
     }
+    if (higherLevel < 0 || lowerLevel > g->levels->GetMaxKey())
+        return FAILURE;
 
-    //need to continue
+    int min = g->levels->FindBiggerThan(lowerLevel)->key;
+    int max = g->levels->FindSmallerThan(higherLevel)->key;
+
+    if (min > max) //no levels in bounds
+        return FAILURE;
+
+    if (score <= 0 || score > scale)
+    {
+        *players = 0;
+        return SUCCESS;
+    }
+
+    *players = (g->levels->GetPercentOfPlayersWithScoreInBounds(score, min, max) * 100.0f);
 
     return SUCCESS;
 }
+
 StatusType PlayersManager::AverageHighestPlayerLevelByGroup(int GroupID, int m, double* level)
 {
+    if (GroupID < 0 || GroupID > k || m <= 0 || level == nullptr)
+        return INVALID_INPUT;
     StatusType st;
     //need to check validation.
     std::shared_ptr<Group> g = groups->Find(GroupID, &st);
@@ -240,6 +247,11 @@ StatusType PlayersManager::AverageHighestPlayerLevelByGroup(int GroupID, int m, 
         g->UpdateRanks(g->level0);
         g->level0_changed = false;
     }
+
+    if (m > g->count)
+        return FAILURE;
+
+    *level = g->levels->GetAverage_m_players(m);
 
     return SUCCESS;
 }
@@ -267,6 +279,7 @@ StatusType PlayersManager::GetPlayersBound(int GroupID, int score, int m,
     return SUCCESS;
 }
 
+/* ************** Helper functions ************** */
 
 StatusType PlayersManager::MoveDataFromSourceToDest(std::shared_ptr<Group> sourceGroup,
     std::shared_ptr<Group> destinationGroup)
@@ -327,14 +340,19 @@ StatusType PlayersManager::MoveDataFromSourceToDest(std::shared_ptr<Group> sourc
 
     //check if there are same levels and merge their tables
     int c = 0;
-    for (int i = 0; i < nS + nD - 1; i++)
+    for (int i = 0; i <= nS + nD - 1; i++)
     {
-        if (arrMergedData[i]->level == arrMergedData[i + 1]->level)
+        if ( (i < nS + nD -1 ) && arrMergedData[i]->level == arrMergedData[i + 1]->level)
         {
             //mergelLevels returns a pointer to the new level
             arrMerged_Levels_Data[c++] = MergeLevels(arrMergedData[i], arrMergedData[i + 1]);
             arrMergedData[i + 1]->players = nullptr;
             num_of_levels--;
+            i++;
+        }
+        else
+        {
+            arrMerged_Levels_Data[c++] = arrMergedData[i];
         }
     }
 
@@ -345,8 +363,8 @@ StatusType PlayersManager::MoveDataFromSourceToDest(std::shared_ptr<Group> sourc
         arrMergedKey[i] = arrMerged_Levels_Data[i]->level;
     }
 
-    int treeHeight =(int) (ceil(log2(num_of_levels + 1)) - 1);      // [log(n1+n2+1)]-1
-    int countRemoveFromRight = (int) ((pow(2, treeHeight + 1) - 1) - (num_of_levels)); // (2^(treeHeight+1)-1) - (n1+n2)
+    int treeHeight = (int)(ceil(log2(num_of_levels + 1)) - 1);      // [log(n1+n2+1)]-1
+    int countRemoveFromRight = (int)((pow(2, treeHeight + 1) - 1) - (num_of_levels)); // (2^(treeHeight+1)-1) - (n1+n2)
 
     std::shared_ptr<Avl> emptyTree(new Avl(treeHeight)); //O(nS + nD)
     emptyTree->reverseInOrderRemoveNodes(countRemoveFromRight);
@@ -401,7 +419,8 @@ std::shared_ptr<Level> PlayersManager::MergeLevels(std::shared_ptr<Level> a, std
     return a;
 }
 
-void PlayersManager::MergeGroups_Helper(std::shared_ptr<Level> a[], int na, std::shared_ptr<Level> b[], int nb, std::shared_ptr<Level> c[])
+void PlayersManager::MergeGroups_Helper(std::shared_ptr<Level> a[], int na, std::shared_ptr<Level> b[],
+    int nb, std::shared_ptr<Level> c[])
 {
     int ia = 0;
     int ib = 0;

@@ -25,6 +25,7 @@ private:
 public:
     PlayersManager(int k_groups, int scale_input); //C'tor
     ~PlayersManager() = default; //D'tor
+
     StatusType MergeGroups(int GroupID1, int GroupID2);
     StatusType AddPlayer(int PlayerID, int GroupID, int score);
     StatusType RemovePlayer(int PlayerID);
@@ -35,6 +36,13 @@ public:
     StatusType AverageHighestPlayerLevelByGroup(int GroupID, int m, double* level);
     StatusType GetPlayersBound(int GroupID, int score, int m,
         int* LowerBoundPlayers, int* HigherBoundPlayers);
+
+    void DEBUG_PrintLevelsTree(int groupID)
+    {
+        StatusType st;
+        std::shared_ptr<Group> g = groups->Find(groupID, &st);
+        g->levels->printInOrder(false);
+    }
 };
 
 #endif

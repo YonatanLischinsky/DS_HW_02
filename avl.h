@@ -98,6 +98,10 @@ public:
     bool search(int key);
     void UpdateRankedData(int startingPoint_Key);
     void PostOrderUpdateRanks();
+    double GetAverage_m_players(int m_players);
+    double GetPercentOfPlayersWithScoreInBounds(int score, int lowerLevel, int higherLevel);
+    std::shared_ptr<Node> FindBiggerThan(int key);
+    std::shared_ptr<Node> FindSmallerThan(int key);
 
 private:
     std::shared_ptr<Node> root;
@@ -122,6 +126,7 @@ private:
     void UpdateRankedData_Left(std::shared_ptr<Node> startNode);
     void UpdateRankedData_ByNode(std::shared_ptr<Node> startNode);
     void PostOrderUpdateRanks_rec(std::shared_ptr<Node> node);
+    std::shared_ptr<Node> findSubroot(std::shared_ptr<Node> node1, std::shared_ptr<Node> node2);
 
 };
 

@@ -95,7 +95,7 @@ StatusType Group::RemovePlayer(int id, int level)
     if (level == 0)
     {
         res = level0->RemovePlayer(id);
-        level0_changed = true;
+        UpdateRanks(level0);
     }
     else
     {
@@ -103,6 +103,8 @@ StatusType Group::RemovePlayer(int id, int level)
         res = lvl->RemovePlayer(id);
         if (lvl->num_players == 0)
             RemoveLevel(level);
+        else
+            UpdateRanks(lvl);
     }
     count--;
     return SUCCESS;

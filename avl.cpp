@@ -756,6 +756,16 @@ void Avl::UpdateRankedData_Left(std::shared_ptr<Node> startNode)
                 startNode->left->data->hist[i];
         }
     }
+    else
+    {
+        startNode->min_left = 0;
+        startNode->num_players_left = 0;
+        startNode->sum_left = 0;
+        for (int i = 1; i < MAXSCALE; i++)
+        {
+            startNode->left_hist[i] = 0;
+        }
+    }
 }
 
 void Avl::UpdateRankedData_Right(std::shared_ptr<Node> startNode)
@@ -774,6 +784,16 @@ void Avl::UpdateRankedData_Right(std::shared_ptr<Node> startNode)
         {
             startNode->right_hist[i] = startNode->right->left_hist[i] + startNode->right->right_hist[i] +
                 startNode->right->data->hist[i];
+        }
+    }
+    else
+    {
+        startNode->max_right = 0;
+        startNode->num_players_right = 0;
+        startNode->sum_right = 0;
+        for (int i = 1; i < MAXSCALE; i++)
+        {
+            startNode->right_hist[i] = 0;
         }
     }
 }
@@ -833,4 +853,217 @@ void Avl::PostOrderUpdateRanks_rec(std::shared_ptr<Node> node)
     {
         node->max_right = node->key;
     }
+}
+
+double Avl::GetAverage_m_players(int m_players)
+{
+    bool is_up = true;
+    int temp = m_players;
+    int sum = 0;
+
+    //Get the max level node:
+    std::shared_ptr<Node> node_ptr = findNode(root, GetMaxKey());
+
+    while (temp > 0)
+    {
+        int num_players = node_ptr->data->num_players;
+        int num_players_left = node_ptr->num_players_left;
+        int num_players_right = node_ptr->num_players_right;
+        int sum_left = node_ptr->sum_left;
+        int sum_right = node_ptr->sum_right;
+        int current_lvl = node_ptr->key;
+
+        if (is_up)
+        {
+            if (num_players >= temp)
+            {
+                sum += temp * current_lvl;
+                temp = 0;
+                break;
+            }
+            else if (num_players + num_players_left >= temp)
+            {
+                sum += num_players * current_lvl;
+                temp -= num_players;
+                is_up = false;
+                node_ptr = node_ptr->left;
+            }
+            else
+            {
+                sum += (num_players * current_lvl) + sum_left;
+                temp -= (num_players + num_players_left);
+                node_ptr = node_ptr->father;
+            }
+        }
+        else // is_up == false
+        {
+            if (num_players_right >= temp)
+            {
+                node_ptr = node_ptr->right;
+            }
+            else if (num_players + num_players_right >= temp)
+            {
+                sum += sum_right + ((temp - num_players_right) * current_lvl);
+                temp = 0;
+                break;
+            }
+            else
+            {
+                sum += sum_right + (num_players * current_lvl);
+                temp -= num_players + num_players_right;
+                node_ptr = node_ptr->left;
+            }
+        }
+    }
+    return ((double)sum / (double)m_players);
+}
+
+std::shared_ptr<Node> Avl::FindBiggerThan(int key)
+{
+    std::shared_ptr<Node> tmp = root;
+    std::shared_ptr<Node> last_closest = findNode(root, GetMaxKey());
+
+    while (tmp != nullptr)
+    {
+        if (key == tmp->key)
+            return tmp;
+
+        if (key < tmp->key)
+        {
+            if (last_closest->key >= tmp->key)
+                last_closest = tmp;
+            tmp = tmp->left;
+        }
+        else
+        {
+            tmp = tmp->right;
+        }
+    }
+    return last_closest;
+}
+
+std::shared_ptr<Node> Avl::FindSmallerThan(int key)
+{
+    std::shared_ptr<Node> tmp = root;
+    std::shared_ptr<Node> last_closest = findNode(root, 0); //0 is the minimum of the tree always !
+    int max = GetMaxKey();
+
+    while (tmp != nullptr)
+    {
+        if ((tmp->key == max && key > max) || key == tmp->key)
+            return tmp;
+
+        if (key > tmp->key)
+        {
+            if (last_closest->key <= tmp->key)
+                last_closest = tmp;
+            tmp = tmp->right;
+        }
+        else
+        {
+            tmp = tmp->left;
+        }
+    }
+    return last_closest;
+}
+
+double Avl::GetPercentOfPlayersWithScoreInBounds(int score, int min, int max)
+{
+    std::shared_ptr<Node> min_node = findNode(root, min);
+    std::shared_ptr<Node> max_node = findNode(root, max);
+    int count_players = 0;
+    int count_players_in_score = 0;
+    std::shared_ptr<Node> node;
+    if (max >= min_node->min_left && max <= min_node->max_right) //case a
+    {
+        node = max_node;
+        while (node->key != min && node != nullptr)
+        {
+            if (node->key >= min && node->key <= max)
+            {
+                count_players += (node->data->num_players + node->num_players_left);
+                count_players_in_score += (node->data->hist[score] + node->left_hist[score]);
+            }
+            node = node->father;
+        }
+        //arrived to min
+        count_players += node->data->num_players;
+        count_players_in_score += node->data->hist[score];
+    }
+    else if (min >= max_node->min_left && max <= max_node->max_right) //case b
+    {
+        node = min_node;
+        while (node->key != max && node != nullptr)
+        {
+            if (node->key >= min && node->key <= max)
+            {
+                count_players += (node->data->num_players + max_node->num_players_right);
+                count_players_in_score += (node->data->hist[score] + node->right_hist[score]);
+            }
+            node = node->father;
+        }
+        //arrived to max
+        count_players += node->data->num_players;
+        count_players_in_score += node->data->hist[score];
+    }
+    else //case c
+    {
+        //find the subroot - complete function
+        std::shared_ptr<Node> subroot = findSubroot(min_node, max_node);
+
+        //going up from max
+        node = max_node;
+        while (node != subroot && node != nullptr)
+        {
+            if (node->key >= min && node->key <= max)
+            {
+                count_players += (node->data->num_players + node->num_players_left);
+                count_players_in_score += (node->data->hist[score] + node->left_hist[score]);
+            }
+            node = node->father;
+        }
+        //arrived to subroot. adding its data
+        count_players += node->data->num_players;
+        count_players_in_score += node->data->hist[score];
+
+        //going up from min
+        node = min_node;
+        while (node != subroot && node != nullptr)
+        {
+            if (node->key >= min && node->key <= max)
+            {
+                count_players += (node->data->num_players + max_node->num_players_right);
+                count_players_in_score += (node->data->hist[score] + node->right_hist[score]);
+            }
+            node = node->father;
+        }
+    }
+
+    return ((double)count_players_in_score / (double)count_players);
+}
+
+std::shared_ptr<Node> Avl::findSubroot(std::shared_ptr<Node> node1, std::shared_ptr<Node> node2)
+{
+    if (node1 == nullptr || node2 == nullptr)
+        return nullptr;
+
+    //going up in paralel and comparing until finding subroot
+
+    while (node2 != nullptr && node2->height < node1->height) //node2 is lower
+    {
+        node2 = node2->father;
+    }
+
+    while (node1 != nullptr && node1->height < node2->height) //node1 is lower
+    {
+        node1 = node1->father;
+    }
+
+    //now in the same height
+    while (node1 != nullptr && node2 != nullptr && node1 != node2)
+    {
+        node1 = node1->father;
+        node2 = node2->father;
+    }
+    return node1;
 }
